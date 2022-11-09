@@ -15,8 +15,18 @@ void setup_flash() {
 void app_main(void)
 {
     setup_flash();
+    setup_settings();
     setup_buttons();
     setup_ap();
+
+    settings_t settings;
+    bool set = retrieve_settings(&settings);
+
+    if(set) {
+        printf("SSID: %.*s\n", settings.ssid_length, settings.ssid);
+        printf("PASS: %.*s\n", settings.password_length, settings.password);
+        printf("API: %.*s\n", settings.api_key_length, settings.api_key);
+    }
 
     while(1) {}
 }  

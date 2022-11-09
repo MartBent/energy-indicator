@@ -1,7 +1,12 @@
+#ifndef BUTTONS_C
+#define BUTTONS_C
+
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"  
 #include "freertos/task.h"
 #include "esp_freertos_hooks.h"
+#include "settings.h"
+#include <string.h>
 
 static TaskHandle_t button_left_task_handle = NULL;
 static TaskHandle_t button_right_task_handle = NULL;
@@ -17,7 +22,7 @@ void button_left_handler(void* arg)
 {
     while(1){
         vTaskSuspend(button_left_task_handle);
-        printf("Left\n");
+        //erase_settings();
         vTaskDelay(300 / portTICK_PERIOD_MS);
     }
 }
@@ -54,3 +59,5 @@ void setup_buttons() {
     xTaskCreate(button_left_handler, "button left isr", 2048, NULL, 5, &button_left_task_handle);
     xTaskCreate(button_right_handler, "button right isr", 2048, NULL, 5, &button_right_task_handle);
 }
+
+#endif
