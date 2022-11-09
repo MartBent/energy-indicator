@@ -1,2 +1,2 @@
-idf_component_register(SRCS "settings.c" "network.c" "buttons.c" "main.c"
+idf_component_register(SRCS "memory/settings.c" "network/wifi.c" "network/http.c"  "hardware/buttons.c" "main.c" "network/page.c"
                     INCLUDE_DIRS ".")
