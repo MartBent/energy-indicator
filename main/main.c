@@ -2,6 +2,7 @@
 #include "network/wifi.h"
 #include "network/http.h"
 #include "nvs_flash.h"
+#include "esp_sleep.h"
 
 void setup_flash() {
     esp_err_t ret = nvs_flash_init();
@@ -15,13 +16,27 @@ void setup_flash() {
 void gather_data_task(void* arg)
 {
     char* response = malloc(1000);
+    setup_sta((settings_t*)arg);
+
     while(1){
+
+        //Re-enable wifi
+        start_and_connect();
+
         uint16_t length = 0;
         if(print_get("http://httpbin.org/get", response, &length)) {
             printf("%.*s", length, response);
             memset(response, 0xFF, 1000);
+        } else {
+            printf("Error doing GET request");
         }
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+
+        //Disable wifi before going into sleep
+        disable_wifi();
+
+        //Set sleep timer and go into sleep
+        esp_sleep_enable_timer_wakeup(10 * 1000000);
+        ESP_ERROR_CHECK(esp_light_sleep_start());
     }
     free(response);
 }
@@ -34,20 +49,12 @@ void app_main(void)
     setup_wifi();
 
     settings_t settings;
-    bool set = retrieve_settings(&settings);
+    bool settings_set = retrieve_settings(&settings);
 
-    if(set) {
-        if(setup_sta(&settings)) {
-            //Start data api gathering...
-            xTaskCreate(gather_data_task, "gather data task", 2048, NULL, 5, NULL);
-        } else {
-            //SSID invalid, reset settings.
-            erase_settings();
-            esp_restart();
-        }
+    if(settings_set) {
+        xTaskCreate(gather_data_task, "gather data task", 2048, &settings, 5, NULL);
     } else {
         setup_ap();
     }
-
     while(1) {}
 }  

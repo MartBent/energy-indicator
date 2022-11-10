@@ -61,14 +61,11 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
                 }
                 output_len += evt->data_len;
             }
-
             break;
         case HTTP_EVENT_ON_FINISH:
-            ESP_LOGD("HTTP-GET", "HTTP_EVENT_ON_FINISH");
             output_len = 0;
             break;
         case HTTP_EVENT_DISCONNECTED:
-            ESP_LOGI("HTTP-GET", "HTTP_EVENT_DISCONNECTED");
             output_len = 0;
             break;
         default:

@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "gpio.h": "c",
+        "*.ipp": "c",
+        "*.inc": "c",
+        "esp_freertos_hooks.h": "c",
+        "settings.h": "c",
+        "wifi.h": "c",
+        "http.h": "c",
+        "esp_check.h": "c"
+    },
+    "idf.adapterTargetName": "esp32",
+    "C_Cpp.errorSquiggles": "Disabled"
+}

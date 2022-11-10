@@ -3,8 +3,6 @@
 
 #include "wifi.h"
 
-static bool connected = false;
-
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
     if (event_id == WIFI_EVENT_AP_STACONNECTED) {
@@ -18,8 +16,8 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
     }
     else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
         //wifi_event_sta_disconnected_t* event = (wifi_event_sta_disconnected_t*) event_data;
+        connected = false;
         ESP_LOGI("WiFi-STA", "Lost connection");
-        esp_restart();
     }
     else if (event_id == IP_EVENT_STA_GOT_IP) {
         connected = true;
@@ -35,7 +33,6 @@ void setup_wifi() {
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
-
 }
 
 void setup_ap() {
@@ -108,10 +105,12 @@ bool setup_sta(const settings_t* settings) {
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
-    ESP_ERROR_CHECK(esp_wifi_start());
+    return start_and_connect();
+}
 
+bool start_and_connect() {
+    ESP_ERROR_CHECK(esp_wifi_start());
     esp_err_t err = esp_wifi_connect();
-    
     if(err == ESP_ERR_WIFI_SSID) {
         return false;
     } else {
@@ -119,4 +118,10 @@ bool setup_sta(const settings_t* settings) {
         return true;
     }
 }
+
+void disable_wifi() {
+    connected = false;
+    ESP_ERROR_CHECK(esp_wifi_stop());
+}
+
 #endif

@@ -1,0 +1,50 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/home/martb/esp/esp-idf/components/nvs_flash/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**",
+                    "${workspaceFolder}/*",
+                    "${workspaceFolder}",
+                    "${workspaceFolder}/main/**",
+                    "/home/martb/esp/esp-idf/components/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        },
+        {
+            "name": "esp32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/*",
+                "${workspaceFolder}",
+                "${workspaceFolder}/main/**",
+                "/home/martb/esp/esp-idf/components/**"
+            ],
+            "defines": [],
+            "compilerPath": "/home/martb/.espressif/tools/xtensa-esp32-elf/esp-2021r2-8.4.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc",
+            "cStandard": "c17",
+            "cppStandard": "c++14",
+            "intelliSenseMode": "linux-clang-x64",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
+        }
+    ],
+    "version": 4
+}
