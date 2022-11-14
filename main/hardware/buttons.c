@@ -11,8 +11,20 @@ void button_left_handler(void* arg)
 {
     while(1){
         vTaskSuspend(button_left_task_handle);
-        //erase_settings();
         vTaskDelay(300 / portTICK_PERIOD_MS);
+        printf("Left\n");
+        uint32_t counter = 0;
+        while(gpio_get_level(BUTTON_LEFT) == 0) {
+
+            vTaskDelay(50 / portTICK_RATE_MS);
+            ++counter;
+
+            if(counter > 100) {
+                erase_settings();
+                esp_restart();
+                break;
+            }
+        }
     }
 }
 void button_right_handler(void* arg)
@@ -37,7 +49,6 @@ void setup_buttons() {
     gpio_set_direction(BUTTON_RIGHT, GPIO_MODE_INPUT);
     gpio_set_pull_mode(BUTTON_RIGHT, GPIO_PULLUP_ONLY);
     gpio_set_intr_type(BUTTON_RIGHT, GPIO_INTR_NEGEDGE);
-
     gpio_intr_enable(BUTTON_RIGHT);
 
     gpio_install_isr_service(0);
