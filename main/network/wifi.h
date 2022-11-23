@@ -13,7 +13,7 @@ static bool connected = false;
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
 
 void setup_wifi();
-void setup_ap();
+void setup_access_point();
 bool setup_sta(const settings_t* settings);
 
 void disable_wifi();

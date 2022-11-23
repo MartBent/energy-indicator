@@ -49,12 +49,13 @@ void app_main(void)
     setup_wifi();
 
     settings_t settings;
-    bool settings_set = retrieve_settings(&settings);
+    bool settings_found = retrieve_settings(&settings);
 
-    if(settings_set) {
+    if(settings_found) {
+        //Start the gather data task if WiFi settings are set
         xTaskCreate(gather_data_task, "gather data task", 2048, &settings, 5, NULL);
     } else {
-        setup_ap();
+        setup_access_point();
     }
     while(1) {}
 }  

@@ -35,7 +35,7 @@ void setup_wifi() {
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL));
 }
 
-void setup_ap() {
+void setup_access_point() {
     esp_netif_t* wifiAP = esp_netif_create_default_wifi_ap();
     esp_netif_ip_info_t ipInfo;
     IP4_ADDR(&ipInfo.ip, 192,168,1,1);
