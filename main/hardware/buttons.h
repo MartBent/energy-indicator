@@ -13,7 +13,7 @@ static TaskHandle_t button_left_task_handle = NULL;
 static TaskHandle_t button_right_task_handle = NULL;
 
 #define BUTTON_LEFT 0
-#define BUTTON_RIGHT 31 
+#define BUTTON_RIGHT 13 
 
 void IRAM_ATTR button_isr(void* arg);
 void button_left_handler(void* arg);

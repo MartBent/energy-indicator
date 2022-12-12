@@ -13,6 +13,7 @@ typedef struct {
     uint8_t password_length;
     char api_key[64];
     uint8_t api_key_length;
+    uint16_t pir_counter;
 } settings_t;
 
 static const uint8_t SETTINGS_CODE[8] = {0xD,0xE,0xA,0xD,0xB,0xE,0xE,0xF};

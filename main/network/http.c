@@ -32,11 +32,12 @@ esp_err_t save_handler(httpd_req_t *req)
     settings.ssid_length = httpd_req_get_hdr_value_len(req, "SSID");
     settings.password_length = httpd_req_get_hdr_value_len(req, "PASS");
     settings.api_key_length = httpd_req_get_hdr_value_len(req, "API");
+    settings.pir_counter = 0;
 
     memcpy(settings.ssid, ssid, settings.ssid_length);
     memcpy(settings.password, password, settings.password_length);
     memcpy(settings.api_key, api_key, settings.api_key_length);
-
+    
     save_settings(&settings);
 
     httpd_resp_send(req, "OK", HTTPD_RESP_USE_STRLEN);

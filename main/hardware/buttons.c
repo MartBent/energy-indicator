@@ -20,7 +20,12 @@ void button_left_handler(void* arg)
             ++counter;
 
             if(counter > 100) {
-                erase_settings();
+                //erase_settings();
+                settings_t settings;
+                retrieve_settings(&settings);
+                settings.pir_counter = 0;
+                printf("Motion count: %d\n", settings.pir_counter);
+                save_settings(&settings);
                 esp_restart();
                 break;
             }
@@ -31,8 +36,13 @@ void button_right_handler(void* arg)
 {
     while(1){
         vTaskSuspend(button_right_task_handle);
-        printf("Right\n");
-        vTaskDelay(300 / portTICK_PERIOD_MS);
+        printf("Motion detected\n");
+        settings_t settings;
+        retrieve_settings(&settings);
+        settings.pir_counter++;
+        printf("Motion count: %d\n", settings.pir_counter);
+        save_settings(&settings);
+        vTaskDelay(10000 / portTICK_PERIOD_MS);
     }
 }
 

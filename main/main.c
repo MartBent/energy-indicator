@@ -52,9 +52,11 @@ void app_main(void)
     bool settings_found = retrieve_settings(&settings);
 
     if(settings_found) {
-        //Start the gather data task if WiFi settings are set
-        xTaskCreate(gather_data_task, "gather data task", 2048, &settings, 5, NULL);
+        printf("Motions detected: %d\n", settings.pir_counter);
+        //Start the gather data task if the device is configured with valid network settings 
+        //xTaskCreate(gather_data_task, "gather data task", 2048, &settings, 5, NULL);
     } else {
+        //Setup an access point so the user can configure the device
         setup_access_point();
     }
     while(1) {}

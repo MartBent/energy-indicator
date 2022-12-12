@@ -9,9 +9,7 @@ bool retrieve_settings(settings_t* settings) {
     printf("Retrieving settings...\n");
     uint8_t code[8];
 
-    ESP_ERROR_CHECK(esp_partition_read_raw(settings_partition, 192+3, code, 8));
-
-    bool ok = true;
+    ESP_ERROR_CHECK(esp_partition_read_raw(settings_partition, 192+5, code, 8));
 
     for(int i = 0; i < 8; i++) {
         if(code[i] != SETTINGS_CODE[i]) {
@@ -26,6 +24,7 @@ bool retrieve_settings(settings_t* settings) {
     ESP_ERROR_CHECK(esp_partition_read_raw(settings_partition, 3, settings->ssid, 64));
     ESP_ERROR_CHECK(esp_partition_read_raw(settings_partition, 64+3, settings->password, 64));
     ESP_ERROR_CHECK(esp_partition_read_raw(settings_partition, 128+3, settings->api_key, 64));
+    ESP_ERROR_CHECK(esp_partition_read_raw(settings_partition, 192+3, &settings->pir_counter, 2));
     return true;
 }
 
@@ -41,7 +40,10 @@ void save_settings(const settings_t* settings) {
     ESP_ERROR_CHECK(esp_partition_write_raw(settings_partition, 64+3, settings->password, 64));
     ESP_ERROR_CHECK(esp_partition_write_raw(settings_partition, 128+3, settings->api_key, 64));
 
-    ESP_ERROR_CHECK(esp_partition_write_raw(settings_partition, 192+3, SETTINGS_CODE, 8));
+    //Testing code
+    ESP_ERROR_CHECK(esp_partition_write_raw(settings_partition, 192+3, &settings->pir_counter, 2));
+
+    ESP_ERROR_CHECK(esp_partition_write_raw(settings_partition, 192+5, SETTINGS_CODE, 8));
 }
 
 void erase_settings() {
