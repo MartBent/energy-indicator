@@ -69,6 +69,7 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
     }
     return ESP_OK;
 }
+
 //Length will contain the error code if this is the case.
 bool http_get_request(const char* url, char* response, int* length) {
     *length = 0;
@@ -81,6 +82,8 @@ bool http_get_request(const char* url, char* response, int* length) {
     };  
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
+
+    esp_http_client_set_header(client, "Accept", "text/csv");
 
     const uint16_t delay_table[3] = {2000, 5000, 10000};
 
