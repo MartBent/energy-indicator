@@ -11,6 +11,6 @@
 esp_err_t access_handler(httpd_req_t *req);
 esp_err_t save_handler(httpd_req_t *req);
 
-bool print_get(const char* url, char* response, uint16_t* length);
+bool http_get_request(const char* url, char* response, int* length);
 
 #endif

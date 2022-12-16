@@ -46,27 +46,23 @@ esp_err_t save_handler(httpd_req_t *req)
 
     return ESP_OK;
 }
+static char rx_data[1000] = {};
+static int rx_data_len = 0;
 
 esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
-    static int output_len;       // Stores number of bytes read
     switch(evt->event_id) {
         case HTTP_EVENT_ON_DATA:
-
-            ESP_LOGD("HTTP-GET", "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-
-            if (!esp_http_client_is_chunked_response(evt->client)) {
-                if (evt->user_data) {
-                    memcpy(evt->user_data + output_len, evt->data, evt->data_len);
-                }
-                output_len += evt->data_len;
+            //Copy to user data if it is not null
+            if (evt->user_data) {
+                memcpy(evt->user_data + rx_data_len, evt->data, evt->data_len);
+                memcpy(rx_data + rx_data_len, evt->data, evt->data_len);
             }
+            rx_data_len += evt->data_len;
             break;
         case HTTP_EVENT_ON_FINISH:
-            output_len = 0;
             break;
         case HTTP_EVENT_DISCONNECTED:
-            output_len = 0;
             break;
         default:
            break;
@@ -74,7 +70,7 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-bool print_get(const char* url, char* response, uint16_t* length) {
+bool http_get_request(const char* url, char* response, int* length) {
     *length = 0;
     esp_http_client_config_t config = {
         .url = url,
@@ -97,18 +93,20 @@ bool print_get(const char* url, char* response, uint16_t* length) {
             if(status == 200) {
                 ok = true;
                 break;
-            } else {
+            } else if(status == 400) {
                 vTaskDelay(delay_table[i] / portTICK_PERIOD_MS);
-            }
+            } 
         } else {
             vTaskDelay(delay_table[i] / portTICK_PERIOD_MS);
         }
     }
 
     if(ok) {
-        if(esp_http_client_is_complete_data_received(client)) {
-            *length = esp_http_client_get_content_length(client);
-            esp_http_client_read_response(client, response, *length);
+        while(!esp_http_client_is_complete_data_received(client)) {}
+        if(rx_data_len > 0) {
+            *length = rx_data_len;
+            memcpy(response, rx_data, rx_data_len);
+            rx_data_len = 0;
         }
     }
     esp_http_client_cleanup(client);

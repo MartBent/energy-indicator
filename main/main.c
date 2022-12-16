@@ -21,12 +21,16 @@ void handle_timer_wakeup(settings_t* settings)
     //Re-enable wifi
     start_and_connect();
 
-    uint16_t length = 0;
-    if(print_get("https://httpbin.org/get", response, &length)) {
+    int length = 0;
+    if(http_get_request("https://api.forecast.solar/estimate/watt_hours_period/52.011509/6.701236/37/0/5.67", response, &length)) {
         printf("%.*s\n", length, response);
+
+        //Json decode
+        //Save times to flash
+        
         memset(response, 0xFF, 1000);
     } else {
-        printf("Error doing GET request");
+        printf("Error doing GET request\n");
     }
 
     //Disable wifi before going into sleep

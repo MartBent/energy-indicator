@@ -36,6 +36,7 @@ void setup_wifi() {
 }
 
 void setup_access_point() {
+    setup_wifi();
     esp_netif_t* wifiAP = esp_netif_create_default_wifi_ap();
     esp_netif_ip_info_t ipInfo;
     IP4_ADDR(&ipInfo.ip, 192,168,1,1);
