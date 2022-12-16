@@ -69,7 +69,7 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
     }
     return ESP_OK;
 }
-
+//Length will contain the error code if this is the case.
 bool http_get_request(const char* url, char* response, int* length) {
     *length = 0;
     esp_http_client_config_t config = {
@@ -86,14 +86,16 @@ bool http_get_request(const char* url, char* response, int* length) {
 
     bool ok = false;
 
+    int status = 0;
+
     for(int i = 0; i < 3; i++) {
         esp_err_t err = esp_http_client_perform(client);
+        status = esp_http_client_get_status_code(client);
         if (err == ESP_OK) {
-            int status = esp_http_client_get_status_code(client);
             if(status == 200) {
                 ok = true;
                 break;
-            } else if(status == 400) {
+            } else {
                 vTaskDelay(delay_table[i] / portTICK_PERIOD_MS);
             } 
         } else {
@@ -108,6 +110,9 @@ bool http_get_request(const char* url, char* response, int* length) {
             memcpy(response, rx_data, rx_data_len);
             rx_data_len = 0;
         }
+    } else {
+        //Put the status in length 
+        *length = status;
     }
     esp_http_client_cleanup(client);
 

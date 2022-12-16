@@ -30,7 +30,7 @@ void handle_timer_wakeup(settings_t* settings)
         
         memset(response, 0xFF, 1000);
     } else {
-        printf("Error doing GET request\n");
+        printf("The GET request resulted in error: %d\n", length);
     }
 
     //Disable wifi before going into sleep
