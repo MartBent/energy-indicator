@@ -25,6 +25,7 @@ void decode() {
 }
 void handle_timer_wakeup(settings_t* settings)
 {
+    setup_wifi();
     char* response = malloc(1000);
     setup_sta(settings);
     
@@ -49,20 +50,27 @@ void handle_timer_wakeup(settings_t* settings)
         printf("The GET request resulted in error: %d\n", length);
     }
 
-    //Disable wifi before going into sleep
     disable_wifi();
     free(response);
 }
 
 
 void handle_sensor_wakeup() {
+    printf("Handling sensor wakeup...\n");
     //Retrieve data from memory.
     //Show data...
 }
 
 void handle_reset_wakeup() {
-    //Check if key is held down for 5 sec
-    //Yes: reset settings No: return
+    printf("Handling reset wakeup...\n");
+    while(gpio_get_level(BUTTON_LEFT) == 0) {
+        vTaskDelay(50 / portTICK_RATE_MS);
+        ++counter;
+        if(counter > 100) {
+            erase_settings();
+            esp_restart();
+        }
+    }
 }
 
 void deep_sleep() {
@@ -103,18 +111,15 @@ void app_main(void)
             }
         }
         else if (wakeup_cause == ESP_SLEEP_WAKEUP_TIMER) {
-            setup_wifi();
             handle_timer_wakeup(&settings);
         }
         else {
             printf("Unknown wakeup cause / Inital startup\n");
-            setup_wifi();
             handle_timer_wakeup(&settings);
         }
         deep_sleep();
     } else {
         printf("Settings not found, setting up AP...\n");
-        //setup_wifi();
         setup_access_point();
     }
     while(1) {}
