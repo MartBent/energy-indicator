@@ -63,6 +63,8 @@ void handle_sensor_wakeup() {
 
 void handle_reset_wakeup() {
     printf("Handling reset wakeup...\n");
+    vTaskDelay(300 / portTICK_PERIOD_MS);
+    uint32_t counter = 0;
     while(gpio_get_level(BUTTON_LEFT) == 0) {
         vTaskDelay(50 / portTICK_RATE_MS);
         ++counter;
@@ -77,7 +79,7 @@ void deep_sleep() {
     //Set sleep timer and go into sleep
     esp_sleep_enable_timer_wakeup(30 * 1000000);
     uint64_t pin_mask = (uint64_t)1 << BUTTON_LEFT | (uint64_t)1 << BUTTON_RIGHT;
-    esp_sleep_enable_ext1_wakeup(pin_mask, 0);
+    esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
     esp_deep_sleep_start();
 }
 
