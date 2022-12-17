@@ -1,6 +1,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include "nvs_flash.h"
+
 #include <stdbool.h>
 #include <string.h>
 #include "esp_system.h"
@@ -23,6 +25,8 @@ void save_settings(const settings_t* settings);
 
 void erase_settings();
 
+void setup_flash();
+    
 void setup_settings();
 
 #endif

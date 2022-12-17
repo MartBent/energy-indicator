@@ -49,6 +49,15 @@ void erase_settings() {
     ESP_ERROR_CHECK(esp_partition_erase_range(settings_partition, 0, 4096));
 }
 
+void setup_flash() {
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK( ret );
+}
+
 void setup_settings() {
     printf("Setup settings...\n");
     settings_partition = esp_partition_find_first(ESP_PARTITION_TYPE_DATA, ESP_PARTITION_SUBTYPE_DATA_NVS, "settings");
