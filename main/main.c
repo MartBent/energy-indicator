@@ -2,9 +2,18 @@
 #include "network/wifi.h"
 #include "network/http.h"
 #include "esp_sleep.h"
+#include "memory/solar_data.h"
+#include "esp_attr.h"
 
-void handle_timer_wakeup(settings_t* settings)
+RTC_DATA_ATTR solar_data_cache_t cache = {};
+void print_cache() {
+    for(int i = 0; i < 19; i++) {
+        print_solar_data(cache.data[i]);
+    }    
+}
+bool handle_timer_wakeup(settings_t* settings)
 {
+    bool result = false;
     setup_wifi();
     char* response = malloc(1000);
     setup_sta(settings);
@@ -16,15 +25,36 @@ void handle_timer_wakeup(settings_t* settings)
     if(http_get_request("https://api.forecast.solar/estimate/watt_hours_period/52.011509/6.701236/37/0/5.67", response, &length)) {
         printf("%.*s\n", length, response);
 
-        char * line;
-        char* rest = response;
+        char* line;
+        uint16_t counter = 0;
 
-        while ((line = strtok_r(rest, "\n", &rest))) {
+        while ((line = strtok_r(response, "\n", &response))) {
             //Line is valid if it is shorter then 30 chars
             if(strlen(line) <= 30) {
-                char* time = strtok_r(line, ";", &line); 
-                char* watts = strtok_r(line, ";", &line); 
-                printf("%s | %s\n", time, watts);
+
+                //We're gonna assume that the API returns 10 hours of each day, so 8 AM + counter. MOD 10 since 2 days of 10 hours are returned.
+                char* date_time = strtok_r(line, ";", &line); 
+                int watts = atoi(strtok_r(line, ";", &line));
+                strtok_r(date_time, " ", &date_time);
+                int time = 8 + (counter % 10);
+               
+                solar_data_t line_data = {
+                    .data_moment = counter < 10 ? Today : Tormorrow,
+                    .hour_of_day = time,
+                    .watt_hour = watts
+                };
+
+                if(counter <= 19) {
+                    cache.data[counter] = line_data;
+                }
+
+                print_solar_data(line_data);
+                counter++;
+            }
+            if(counter == 19) {
+                cache.data_valid = true;
+                result = true;
+
             }
         }
     }
@@ -32,15 +62,18 @@ void handle_timer_wakeup(settings_t* settings)
         printf("The GET request resulted in error: %d\n", length);
     }
     disable_wifi();
-    memset(response, 0xFF, 1000);
     free(response);
+    return result;
 }
 
 
 void handle_sensor_wakeup() {
     printf("Handling sensor wakeup...\n");
-    //Retrieve data from memory.
-    //Show data...
+    if(cache.data_valid) {
+        print_cache();
+    } else {
+        printf("Data cache is empty\n");
+    }
 }
 
 void handle_reset_wakeup() {
@@ -57,11 +90,11 @@ void handle_reset_wakeup() {
     }
 }
 
-void deep_sleep() {
+void deep_sleep(uint32_t sleep_interval_seconds) {
     //Set sleep timer and go into sleep
-    esp_sleep_enable_timer_wakeup(30 * 1000000);
+    esp_sleep_enable_timer_wakeup(sleep_interval_seconds * 1000000);
     uint64_t pin_mask = (uint64_t)1 << BUTTON_LEFT | (uint64_t)1 << BUTTON_RIGHT;
-    esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
+    //esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
     esp_deep_sleep_start();
 }
 
@@ -75,7 +108,8 @@ void app_main(void)
     bool settings_found = retrieve_settings(&settings);
 
     if(settings_found) {
-        printf("Settings found, connecting..."); 
+        printf("Settings found, connecting...\n"); 
+        bool data_retrieved = false;
 
         //Depending on how the device was started, run certain tasks
         esp_sleep_source_t wakeup_cause = esp_sleep_get_wakeup_cause();
@@ -95,13 +129,15 @@ void app_main(void)
             }
         }
         else if (wakeup_cause == ESP_SLEEP_WAKEUP_TIMER) {
-            handle_timer_wakeup(&settings);
+            data_retrieved = handle_timer_wakeup(&settings);
         }
         else {
+            //The device should always retrieve solar data from the internet on startup.
             printf("Unknown wakeup cause / Inital startup\n");
-            handle_timer_wakeup(&settings);
+            data_retrieved = handle_timer_wakeup(&settings);
         }
-        deep_sleep();
+        //Sleep for only an hour if no data is retrieved. Otherswise for an whole day.
+        deep_sleep(data_retrieved ? 60*60*24 : 60*60);
     } else {
         printf("Settings not found, setting up AP...\n");
         setup_access_point();
