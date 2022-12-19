@@ -1,7 +1,6 @@
 #include "hardware/buttons.h"
 #include "network/wifi.h"
 #include "network/http.h"
-#include "nvs_flash.h"
 #include "esp_sleep.h"
 
 void handle_timer_wakeup(settings_t* settings)
