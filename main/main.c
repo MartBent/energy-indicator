@@ -16,21 +16,23 @@ void handle_timer_wakeup(settings_t* settings)
     if(http_get_request("https://api.forecast.solar/estimate/watt_hours_period/52.011509/6.701236/37/0/5.67", response, &length)) {
         printf("%.*s\n", length, response);
 
-        char * hour_data = strtok(response, "\n");
+        char * line;
+        char* rest = response;
 
-        while(hour_data != NULL) {
-            char* hour = strtok(hour_data, ";");
-            printf("Hour %s\n", hour);
-            printf("Watthours %s\n", hour_data);
-            hour_data = strtok(response, "\n");
+        while ((line = strtok_r(rest, "\n", &rest))) {
+            //Line is valid if it is shorter then 30 chars
+            if(strlen(line) <= 30) {
+                char* time = strtok_r(line, ";", &line); 
+                char* watts = strtok_r(line, ";", &line); 
+                printf("%s | %s\n", time, watts);
+            }
         }
-
-        memset(response, 0xFF, 1000);
-    } else {
+    }
+    else {
         printf("The GET request resulted in error: %d\n", length);
     }
-
     disable_wifi();
+    memset(response, 0xFF, 1000);
     free(response);
 }
 
