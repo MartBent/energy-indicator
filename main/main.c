@@ -1,4 +1,5 @@
 #include "hardware/buttons.h"
+#include "hardware/clock_led.h"
 #include "network/wifi.h"
 #include "network/http.h"
 #include "esp_sleep.h"
@@ -67,7 +68,6 @@ bool handle_timer_wakeup(settings_t* settings)
     return result;
 }
 
-
 void handle_sensor_wakeup() {
     printf("Handling sensor wakeup...\n");
     if(cache.data_valid) {
@@ -103,6 +103,7 @@ void app_main(void)
 {
     setup_flash();
     setup_settings();
+    setup_clock_led();
     //setup_buttons();
 
     settings_t settings;

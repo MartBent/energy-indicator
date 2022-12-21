@@ -1,10 +1,9 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include "nvs_flash.h"
-
 #include <stdbool.h>
 #include <string.h>
+#include "nvs_flash.h"
 #include "esp_system.h"
 #include "esp_partition.h"
 
