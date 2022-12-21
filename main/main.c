@@ -6,6 +6,7 @@
 #include "esp_attr.h"
 
 RTC_DATA_ATTR solar_data_cache_t cache = {};
+
 void print_cache() {
     for(int i = 0; i < 19; i++) {
         print_solar_data(cache.data[i]);
@@ -56,7 +57,7 @@ bool handle_timer_wakeup(settings_t* settings)
                 result = true;
 
             }
-        }
+        }      
     }
     else {
         printf("The GET request resulted in error: %d\n", length);
@@ -80,7 +81,7 @@ void handle_reset_wakeup() {
     printf("Handling reset wakeup...\n");
     vTaskDelay(300 / portTICK_PERIOD_MS);
     uint32_t counter = 0;
-    while(gpio_get_level(BUTTON_LEFT) == 0) {
+    while(gpio_get_level(RESET_BUTTON) == 0) {
         vTaskDelay(50 / portTICK_RATE_MS);
         ++counter;
         if(counter > 100) {
@@ -93,8 +94,8 @@ void handle_reset_wakeup() {
 void deep_sleep(uint32_t sleep_interval_seconds) {
     //Set sleep timer and go into sleep
     esp_sleep_enable_timer_wakeup(sleep_interval_seconds * 1000000);
-    uint64_t pin_mask = (uint64_t)1 << BUTTON_LEFT | (uint64_t)1 << BUTTON_RIGHT;
-    //esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
+    uint64_t pin_mask = (uint64_t)1 << RESET_BUTTON;
+    esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
     esp_deep_sleep_start();
 }
 
@@ -102,7 +103,7 @@ void app_main(void)
 {
     setup_flash();
     setup_settings();
-    setup_buttons();
+    //setup_buttons();
 
     settings_t settings;
     bool settings_found = retrieve_settings(&settings);
@@ -118,8 +119,8 @@ void app_main(void)
             //Check pin num
             uint64_t pin_mask = esp_sleep_get_ext1_wakeup_status();
 
-            bool did_sensor_wakeup = (pin_mask >> BUTTON_LEFT) == 1;
-            bool did_button_wakeup = (pin_mask >> BUTTON_RIGHT) == 1;
+            bool did_sensor_wakeup = (pin_mask >> SENSOR_INT) == 1;
+            bool did_button_wakeup = (pin_mask >> RESET_BUTTON) == 1;
 
             if(did_button_wakeup) {
                 handle_reset_wakeup();

@@ -24,17 +24,17 @@ void button_right_handler(void* arg)
 
 void setup_buttons() {
      // Initialize the buttons
-    gpio_pad_select_gpio(BUTTON_LEFT);
-    gpio_set_direction(BUTTON_LEFT, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(BUTTON_LEFT, GPIO_PULLUP_ONLY);
-    //gpio_set_intr_type(BUTTON_LEFT, GPIO_INTR_NEGEDGE);
-    //gpio_intr_enable(BUTTON_LEFT);
-
-    // Initialize the buttons
-    gpio_pad_select_gpio(BUTTON_RIGHT);
-    gpio_set_direction(BUTTON_RIGHT, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(BUTTON_RIGHT, GPIO_PULLUP_ONLY);
-    //gpio_set_intr_type(BUTTON_RIGHT, GPIO_INTR_NEGEDGE);
+    //gpio_pad_select_gpio(BUTTON_LEFT);
+   //gpio_set_direction(BUTTON_LEFT, GPIO_MODE_INPUT);
+   //gpio_set_pull_mode(BUTTON_LEFT, GPIO_PULLUP_ONLY);
+   ////gpio_set_intr_type(BUTTON_LEFT, GPIO_INTR_NEGEDGE);
+   ////gpio_intr_enable(BUTTON_LEFT);
+//
+   //// Initialize the buttons
+   //gpio_pad_select_gpio(BUTTON_RIGHT);
+   //gpio_set_direction(BUTTON_RIGHT, GPIO_MODE_INPUT);
+   //gpio_set_pull_mode(BUTTON_RIGHT, GPIO_PULLUP_ONLY);
+   ////gpio_set_intr_type(BUTTON_RIGHT, GPIO_INTR_NEGEDGE);
     //gpio_intr_enable(BUTTON_RIGHT);
 
     //gpio_install_isr_service(0);
