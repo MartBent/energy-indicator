@@ -8,7 +8,9 @@
         "wifi.h": "c",
         "http.h": "c",
         "esp_check.h": "c",
-        "buttons.h": "c"
+        "buttons.h": "c",
+        "clock_led.h": "c",
+        "led_strip.h": "c"
     },
     "idf.adapterTargetName": "esp32",
     "C_Cpp.errorSquiggles": "Disabled"

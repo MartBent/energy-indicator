@@ -56,7 +56,6 @@ bool handle_timer_wakeup(settings_t* settings)
             if(counter == 19) {
                 cache.data_valid = true;
                 result = true;
-
             }
         }      
     }
@@ -81,7 +80,7 @@ void handle_reset_wakeup() {
     printf("Handling reset wakeup...\n");
     vTaskDelay(300 / portTICK_PERIOD_MS);
     uint32_t counter = 0;
-    while(gpio_get_level(RESET_BUTTON) == 0) {
+    while(gpio_get_level(RESET_BUTTON) == 1) {
         vTaskDelay(50 / portTICK_RATE_MS);
         ++counter;
         if(counter > 100) {
@@ -93,9 +92,10 @@ void handle_reset_wakeup() {
 
 void deep_sleep(uint32_t sleep_interval_seconds) {
     //Set sleep timer and go into sleep
+    printf("Going into sleep...\n");
     esp_sleep_enable_timer_wakeup(sleep_interval_seconds * 1000000);
     uint64_t pin_mask = (uint64_t)1 << RESET_BUTTON;
-    esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH);
+    ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH));
     esp_deep_sleep_start();
 }
 
@@ -103,8 +103,7 @@ void app_main(void)
 {
     setup_flash();
     setup_settings();
-    setup_clock_led();
-    //setup_buttons();
+    //setup_clock_led();
 
     settings_t settings;
     bool settings_found = retrieve_settings(&settings);

@@ -13,7 +13,7 @@ static TaskHandle_t button_left_task_handle = NULL;
 static TaskHandle_t button_right_task_handle = NULL;
 
 #define SENSOR_INT 0
-#define RESET_BUTTON 22 
+#define RESET_BUTTON 2
 
 void IRAM_ATTR button_isr(void* arg);
 void button_left_handler(void* arg);
