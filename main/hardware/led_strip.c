@@ -18,7 +18,7 @@
 
 #include <string.h>
 
-#define LED_STRIP_TASK_SIZE             (512)
+#define LED_STRIP_TASK_SIZE             (2048)
 #define LED_STRIP_TASK_PRIORITY         (configMAX_PRIORITIES - 1)
 
 #define LED_STRIP_REFRESH_PERIOD_MS     (30U) // TODO: add as parameter to led_strip_init
@@ -235,7 +235,7 @@ static void led_strip_task(void *arg)
 
     for(;;) {
         rmt_wait_tx_done(led_strip->rmt_channel, 0);
-        xSemaphoreTake(led_strip->access_semaphore, portMAX_DELAY);
+        //xSemaphoreTake(led_strip->access_semaphore, portMAX_DELAY);
 
         /*
          * If buf 1 was previously being shown and now buf 2 is being shown,
@@ -261,7 +261,7 @@ static void led_strip_task(void *arg)
 
         rmt_write_items(led_strip->rmt_channel, rmt_items, num_items_malloc, false);
         prev_showing_buf_1 = led_strip->showing_buf_1;
-        xSemaphoreGive(led_strip->access_semaphore);
+        //xSemaphoreGive(led_strip->access_semaphore);
         vTaskDelay(LED_STRIP_REFRESH_PERIOD_MS / portTICK_PERIOD_MS);
     }
 

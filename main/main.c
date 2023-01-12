@@ -103,7 +103,8 @@ void app_main(void)
 {
     setup_flash();
     setup_settings();
-    //setup_clock_led();
+    setup_clock_led();
+    while(1) {}
 
     settings_t settings;
     bool settings_found = retrieve_settings(&settings);
