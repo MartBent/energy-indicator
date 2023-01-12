@@ -66,7 +66,7 @@ static solar_data_cache_t test_cache = {
 
 
 void print_cache() {
-    for(int i = 0; i < 19; i++) {
+    for(int i = 0; i < 10; i++) {
         print_solar_data(cache.data[i]);
     }    
 }
@@ -75,7 +75,10 @@ bool handle_timer_wakeup(settings_t* settings)
     bool result = false;
     setup_wifi();
     char* response = malloc(1000);
-    setup_sta(settings);
+    bool ok = setup_sta(settings);
+    if(!ok) {
+        printf("Error connecting to wifi\n");
+    }
     
     //Re-enable wifi
     start_and_connect();
@@ -109,10 +112,11 @@ bool handle_timer_wakeup(settings_t* settings)
 
                 counter++;
             }
-            if(counter == 19) {
+            if(counter == 10) {
                 cache.data_valid = true;
                 result = true;
                 print_cache();
+                break;
             }
         }      
     }
@@ -120,7 +124,7 @@ bool handle_timer_wakeup(settings_t* settings)
         printf("The GET request resulted in error: %d\n", length);
     }
     disable_wifi();
-    free(response);
+    //free(response);
     return result;
 }
 
