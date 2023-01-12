@@ -8,6 +8,63 @@
 
 RTC_DATA_ATTR solar_data_cache_t cache = {};
 
+static solar_data_cache_t test_cache = {
+    .data_valid = true,
+    .data = {
+        {
+            .data_moment = Today,
+            .hour_of_day = 8,
+            .watt_hour = 0
+        }, 
+        {
+            .data_moment = Today,
+            .hour_of_day = 9,
+            .watt_hour = 39
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 10,
+            .watt_hour = 304
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 11,
+            .watt_hour = 427
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 12,
+            .watt_hour = 408
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 13,
+            .watt_hour = 387
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 14,
+            .watt_hour = 356
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 15,
+            .watt_hour = 282
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 16,
+            .watt_hour = 162
+        },
+        {
+            .data_moment = Today,
+            .hour_of_day = 17,
+            .watt_hour = 36
+        }
+    }
+};
+
+
 void print_cache() {
     for(int i = 0; i < 19; i++) {
         print_solar_data(cache.data[i]);
@@ -50,12 +107,12 @@ bool handle_timer_wakeup(settings_t* settings)
                     cache.data[counter] = line_data;
                 }
 
-                print_solar_data(line_data);
                 counter++;
             }
             if(counter == 19) {
                 cache.data_valid = true;
                 result = true;
+                print_cache();
             }
         }      
     }
@@ -68,11 +125,40 @@ bool handle_timer_wakeup(settings_t* settings)
 }
 
 void handle_sensor_wakeup() {
+    setup_clock_led();
     printf("Handling sensor wakeup...\n");
-    if(cache.data_valid) {
-        print_cache();
+
+    solar_data_cache_t* cache_ptr = &cache;
+    if(!cache.data_valid) {
+        printf("No valid data in memory, using test data...\n");
+        cache_ptr = &test_cache;
+    }
+
+    solar_data_t max_data = {
+        .data_moment = Today,
+        .hour_of_day = 0,
+        .watt_hour = 0
+    };
+
+    if(cache_ptr->data_valid) {
+        //Get best solar hour of today
+        for(int i = 0; i < 10; i++) {
+            solar_data_t current_data = cache_ptr->data[i];
+            if(current_data.watt_hour > max_data.watt_hour) {
+                max_data = current_data;
+            }
+        }
+
+        display_hour(max_data.hour_of_day);
+
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
+
+        disable_clock_led();
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     } else {
         printf("Data cache is empty\n");
+        display_hour(0);
     }
 }
 
@@ -94,7 +180,9 @@ void deep_sleep(uint32_t sleep_interval_seconds) {
     //Set sleep timer and go into sleep
     printf("Going into sleep...\n");
     esp_sleep_enable_timer_wakeup(sleep_interval_seconds * 1000000);
+    
     uint64_t pin_mask = (uint64_t)1 << RESET_BUTTON;
+    
     ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH));
     esp_deep_sleep_start();
 }
@@ -103,8 +191,6 @@ void app_main(void)
 {
     setup_flash();
     setup_settings();
-    setup_clock_led();
-    while(1) {}
 
     settings_t settings;
     bool settings_found = retrieve_settings(&settings);
@@ -124,7 +210,9 @@ void app_main(void)
             bool did_button_wakeup = (pin_mask >> RESET_BUTTON) == 1;
 
             if(did_button_wakeup) {
-                handle_reset_wakeup();
+                //handle_reset_wakeup();
+                handle_sensor_wakeup();
+
             } 
             else if(did_sensor_wakeup) {
                 handle_sensor_wakeup();
