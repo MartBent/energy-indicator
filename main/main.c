@@ -72,14 +72,16 @@ void print_cache() {
 }
 bool handle_timer_wakeup(settings_t* settings)
 {
-    bool result = false;
     setup_wifi();
-    char* response = malloc(1000);
+    
     bool ok = setup_sta(settings);
     if(!ok) {
         printf("Error connecting to wifi\n");
+        return false;
     }
-    
+
+    bool result = false;
+    char* response = malloc(1000);
     //Re-enable wifi
     start_and_connect();
 
@@ -124,7 +126,6 @@ bool handle_timer_wakeup(settings_t* settings)
         printf("The GET request resulted in error: %d\n", length);
     }
     disable_wifi();
-    //free(response);
     return result;
 }
 

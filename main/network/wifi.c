@@ -115,8 +115,12 @@ bool start_and_connect() {
     if(err == ESP_ERR_WIFI_SSID) {
         return false;
     } else {
-        while(!connected){};
-        return true;
+        uint16_t delay_table[4] = {500, 1000, 2000, 5000};
+        uint8_t counter = 0;
+        while(counter < 4 && !connected){
+            vTaskDelay(delay_table[counter++] / portTICK_PERIOD_MS);
+        }
+        return connected;
     }
 }
 
