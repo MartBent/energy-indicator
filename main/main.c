@@ -6,6 +6,11 @@
 #include "memory/solar_data.h"
 #include "esp_attr.h"
 
+#include "hardware/display/epd2in9b.h"
+#include "hardware/display/epdpaint.h"
+
+#include "hardware/display/fonts.h"
+
 RTC_DATA_ATTR solar_data_cache_t cache = {};
 
 static solar_data_cache_t test_cache = {
@@ -192,10 +197,36 @@ void deep_sleep(uint32_t sleep_interval_seconds) {
     esp_deep_sleep_start();
 }
 
+#define COLORED     0
+#define UNCOLORED   1
+
+void test_display()
+{
+    image = (unsigned char*) malloc((128*296) / 8);
+
+    memset(image, 0, 128*296/8);
+
+    Init();
+
+    ClearFrame();
+    Clear(UNCOLORED);
+    DisplayFrameRam();
+
+    DrawStringAt(0, 0, "Holy shit", &Font24, COLORED);
+
+    SetPartialWindowBlack(image, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    DisplayFrameRam();
+    Sleep();
+
+    while(1){}
+}
 void app_main(void)
 {
     setup_flash();
     setup_settings();
+
+    test_display();
 
     settings_t settings;
     bool settings_found = retrieve_settings(&settings);

@@ -10,7 +10,10 @@
         "esp_check.h": "c",
         "buttons.h": "c",
         "clock_led.h": "c",
-        "led_strip.h": "c"
+        "led_strip.h": "c",
+        "solar_data.h": "c",
+        "imagedata.h": "c",
+        "spi_master.h": "c"
     },
     "idf.adapterTargetName": "esp32",
     "C_Cpp.errorSquiggles": "Disabled"
