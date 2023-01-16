@@ -210,9 +210,8 @@ void test_display()
 
     ClearFrame();
     Clear(UNCOLORED);
-    DisplayFrameRam();
 
-    DrawStringAt(0, 0, "Holy shit", &Font24, COLORED);
+    DrawStringAt(0, 0, "Green Bee", &Font24, COLORED);
 
     SetPartialWindowBlack(image, 0, 0, EPD_WIDTH, EPD_HEIGHT);
 
