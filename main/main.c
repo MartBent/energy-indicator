@@ -13,6 +13,9 @@
 
 RTC_DATA_ATTR solar_data_cache_t cache = {};
 
+#define COLORED     0
+#define UNCOLORED   1
+
 static solar_data_cache_t test_cache = {
     .data_valid = true,
     .data = {
@@ -75,6 +78,30 @@ void print_cache() {
         print_solar_data(cache.data[i]);
     }    
 }
+
+void draw_hour_watts(int hour, int watts)
+{
+    image = (unsigned char*) malloc((128*296) / 8);
+    memset(image, 0, 128*296/8);
+
+    Init();
+
+    ClearFrame();
+    Clear(UNCOLORED);
+
+    char message[30] = {};
+    
+    sprintf(message, "%d:00 : %d", hour, watts);
+
+    DrawStringAt(0, 0, message, &Font24, COLORED);
+
+    SetPartialWindowBlack(image, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    DisplayFrameRam();
+    Sleep();
+    free(image);
+}
+
 bool handle_timer_wakeup(settings_t* settings)
 {
     setup_wifi();
@@ -87,6 +114,7 @@ bool handle_timer_wakeup(settings_t* settings)
 
     bool result = false;
     char* response = malloc(1000);
+
     //Re-enable wifi
     start_and_connect();
 
@@ -160,8 +188,9 @@ void handle_sensor_wakeup() {
         }
 
         display_hour(max_data.hour_of_day);
-
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        draw_hour_watts(max_data.hour_of_day, max_data.watt_hour);
+        
+        //vTaskDelay(3000 / portTICK_PERIOD_MS);
 
         disable_clock_led();
 
@@ -197,35 +226,15 @@ void deep_sleep(uint32_t sleep_interval_seconds) {
     esp_deep_sleep_start();
 }
 
-#define COLORED     0
-#define UNCOLORED   1
-
-void test_display()
-{
-    image = (unsigned char*) malloc((128*296) / 8);
-
-    memset(image, 0, 128*296/8);
-
-    Init();
-
-    ClearFrame();
-    Clear(UNCOLORED);
-
-    DrawStringAt(0, 0, "Green Bee", &Font24, COLORED);
-
-    SetPartialWindowBlack(image, 0, 0, EPD_WIDTH, EPD_HEIGHT);
-
-    DisplayFrameRam();
-    Sleep();
-
-    while(1){}
-}
 void app_main(void)
 {
     setup_flash();
     setup_settings();
-
-    test_display();
+    
+    //Display
+    Init();
+    ClearFrame();
+    Clear(UNCOLORED);
 
     settings_t settings;
     bool settings_found = retrieve_settings(&settings);
