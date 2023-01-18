@@ -1,105 +1,47 @@
-#include "hardware/buttons.h"
-#include "hardware/clock_led.h"
+#include "esp_sleep.h"
+
 #include "network/wifi.h"
 #include "network/http.h"
-#include "esp_sleep.h"
-#include "memory/solar_data.h"
-#include "esp_attr.h"
 
+#include "memory/solar_data.h"
+
+#include "hardware/clock_led.h"
 #include "hardware/display/epd2in9b.h"
 #include "hardware/display/epdpaint.h"
-
 #include "hardware/display/fonts.h"
+#include "hardware/battery.h"
+
 
 RTC_DATA_ATTR solar_data_cache_t cache = {};
 
-#define COLORED     0
-#define UNCOLORED   1
+solar_data_t* get_max_hour_data(bool use_test_data) {
 
-static solar_data_cache_t test_cache = {
-    .data_valid = true,
-    .data = {
-        {
-            .data_moment = Today,
-            .hour_of_day = 8,
-            .watt_hour = 0
-        }, 
-        {
-            .data_moment = Today,
-            .hour_of_day = 9,
-            .watt_hour = 39
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 10,
-            .watt_hour = 304
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 11,
-            .watt_hour = 427
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 12,
-            .watt_hour = 408
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 13,
-            .watt_hour = 387
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 14,
-            .watt_hour = 356
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 15,
-            .watt_hour = 282
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 16,
-            .watt_hour = 162
-        },
-        {
-            .data_moment = Today,
-            .hour_of_day = 17,
-            .watt_hour = 36
-        }
-    }
-};
-
-
-void print_cache() {
-    for(int i = 0; i < 10; i++) {
-        print_solar_data(cache.data[i]);
-    }    
-}
-
-void draw_hour_watts(int hour, int watts)
-{
-    image = (unsigned char*) malloc((128*296) / 8);
-    memset(image, 0, 128*296/8);
-
-    Init();
-
-    ClearFrame();
-    Clear(UNCOLORED);
-
-    char message[30] = {};
+    solar_data_t* result;
     
-    sprintf(message, "%d:00 : %d", hour, watts);
+    solar_data_cache_t* cache_ptr = &cache;
+    //Code for testing: if data is not received still display some testing data
+    if(!cache.data_valid && use_test_data) {
+        printf("No valid data in memory, using test data...\n");
+        cache_ptr = &test_cache;
+    }
 
-    DrawStringAt(0, 0, message, &Font24, COLORED);
+    solar_data_t max_data = {
+        .data_moment = Today,
+        .hour_of_day = 0,
+        .watt_hour = 0
+    };
 
-    SetPartialWindowBlack(image, 0, 0, EPD_WIDTH, EPD_HEIGHT);
-
-    DisplayFrameRam();
-    Sleep();
-    free(image);
+    if(cache_ptr->data_valid) {
+        result = &cache_ptr->data[0];
+        for(int i = 0; i < 10; i++) {
+            if(cache_ptr->data[i].watt_hour > result->watt_hour) {
+                result = &cache_ptr->data[i];
+            }
+        }
+        return result;
+    } else {
+        return NULL;
+    }
 }
 
 bool handle_timer_wakeup(settings_t* settings)
@@ -150,7 +92,7 @@ bool handle_timer_wakeup(settings_t* settings)
             if(counter == 10) {
                 cache.data_valid = true;
                 result = true;
-                print_cache();
+                print_cache(cache);
                 break;
             }
         }      
@@ -158,46 +100,52 @@ bool handle_timer_wakeup(settings_t* settings)
     else {
         printf("The GET request resulted in error: %d\n", length);
     }
+
+    solar_data_t* max_data = get_max_hour_data(true);
+    display_draw_hour_watts(max_data->hour_of_day, max_data->watt_hour);
+
     disable_wifi();
     return result;
 }
 
 void handle_sensor_wakeup() {
+
     setup_clock_led();
+    battery_init_led();
+    network_init_led();
+
     printf("Handling sensor wakeup...\n");
 
-    solar_data_cache_t* cache_ptr = &cache;
-    if(!cache.data_valid) {
-        printf("No valid data in memory, using test data...\n");
-        cache_ptr = &test_cache;
-    }
+    solar_data_t* max_data_ptr = get_max_hour_data(true);
 
-    solar_data_t max_data = {
-        .data_moment = Today,
-        .hour_of_day = 0,
-        .watt_hour = 0
-    };
-
-    if(cache_ptr->data_valid) {
-        //Get best solar hour of today
-        for(int i = 0; i < 10; i++) {
-            solar_data_t current_data = cache_ptr->data[i];
-            if(current_data.watt_hour > max_data.watt_hour) {
-                max_data = current_data;
-            }
+    if(max_data_ptr != NULL) {
+        
+        clock_led_display_hour(max_data_ptr->hour_of_day);
+        
+        uint32_t voltage = battery_read_voltage();
+        
+        //Turn on the warning LED if battery is low
+        if(voltage < 1300) {
+            battery_enable_led();
         }
 
-        display_hour(max_data.hour_of_day);
-        draw_hour_watts(max_data.hour_of_day, max_data.watt_hour);
-        
-        //vTaskDelay(3000 / portTICK_PERIOD_MS);
+        //Keep everything turned on for 3 seconds
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
 
         disable_clock_led();
+        battery_disable_led();
 
+        //Give the LED strip time to turn off
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     } else {
         printf("Data cache is empty\n");
-        display_hour(0);
+
+        network_enable_led();
+        disable_clock_led();
+
+        vTaskDelay(3000 / portTICK_PERIOD_MS);
+
+        network_disable_led();
     }
 }
 
@@ -209,6 +157,7 @@ void handle_reset_wakeup() {
         vTaskDelay(50 / portTICK_RATE_MS);
         ++counter;
         if(counter > 100) {
+            clock_led_animate();
             erase_settings();
             esp_restart();
         }
@@ -221,6 +170,9 @@ void deep_sleep(uint32_t sleep_interval_seconds) {
     esp_sleep_enable_timer_wakeup(sleep_interval_seconds * 1000000);
     
     uint64_t pin_mask = (uint64_t)1 << RESET_BUTTON;
+
+    //pin_mask |= (uint64_t)1 << SENSOR_INT;
+
     
     ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH));
     esp_deep_sleep_start();
@@ -230,11 +182,6 @@ void app_main(void)
 {
     setup_flash();
     setup_settings();
-    
-    //Display
-    Init();
-    ClearFrame();
-    Clear(UNCOLORED);
 
     settings_t settings;
     bool settings_found = retrieve_settings(&settings);
@@ -254,8 +201,7 @@ void app_main(void)
             bool did_button_wakeup = (pin_mask >> RESET_BUTTON) == 1;
 
             if(did_button_wakeup) {
-                //handle_reset_wakeup();
-                handle_sensor_wakeup();
+                handle_reset_wakeup();
 
             } 
             else if(did_sensor_wakeup) {
@@ -271,7 +217,7 @@ void app_main(void)
             data_retrieved = handle_timer_wakeup(&settings);
         }
         //Sleep for only an hour if no data is retrieved. Otherswise for an whole day.
-        deep_sleep(data_retrieved ? 60*60*24 : 60*60);
+        deep_sleep(data_retrieved ? 60*60*24 : 60);
     } else {
         printf("Settings not found, setting up AP...\n");
         setup_access_point();
