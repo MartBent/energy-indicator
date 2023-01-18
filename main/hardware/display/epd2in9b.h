@@ -27,9 +27,16 @@
 #ifndef EPD2IN9B_H
 #define EPD2IN9B_H
 
+#include <string.h>
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "freertos/task.h"
+#include "../pins.h"
+#include "epdpaint.h"
+
+
+#define COLORED     0
+#define UNCOLORED   1
 
 // Display resolution
 #define EPD_WIDTH       128
@@ -37,13 +44,6 @@
 
 #define EPD_FREQ 2000000
 #define EPAPER_QUE_SIZE_DEFAULT 10
-
-#define BUSY_PIN        26 // D1
-#define RST_PIN         27 // D2
-#define DC_PIN          25 // D3
-#define CS_PIN          15 // D4
-#define MOSI_PIN 23
-#define SCK_PIN 18
 
 // EPD2IN9B commands
 #define PANEL_SETTING                               0x00
@@ -99,6 +99,8 @@ void DisplayFrame(const unsigned char* frame_buffer_black, const unsigned char* 
 void DisplayFrameRam(void);
 void ClearFrame(void);
 void Sleep(void);  
+
+void display_draw_hour_watts(int hour, int watts);
 
 #endif /* EPD2IN9B_H */
 

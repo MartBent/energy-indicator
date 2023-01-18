@@ -326,6 +326,28 @@ void Sleep() {
 }
 
 
-/* END OF FILE */
+//Draws hour and watts string to the screen in the format "{hour} : {watts}"
+void display_draw_hour_watts(int hour, int watts)
+{
+    image = (unsigned char*) malloc((128*296) / 8);
+    memset(image, 0, 128*296/8);
+
+    Init();
+
+    ClearFrame();
+    Clear(UNCOLORED);
+
+    char message[30] = {};
+    
+    sprintf(message, "%d:00 : %d", hour, watts);
+
+    DrawStringAt(40, 40, message, &Font24, COLORED);
+
+    SetPartialWindowBlack(image, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    DisplayFrameRam();
+    Sleep();
+    free(image);
+}
 
 

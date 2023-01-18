@@ -33,7 +33,7 @@ void disable_clock_led() {
 }
 
 //Hours since midnight
-void display_hour(uint8_t hours_since_midnight) {
+void clock_led_display_hour(uint8_t hours_since_midnight) {
 
     struct led_color_t green_color = {
         .red = 0,
@@ -49,5 +49,26 @@ void display_hour(uint8_t hours_since_midnight) {
 
     led_strip_show(&led_strip);
 }
+
+void clock_led_animate() {
+    struct led_color_t white_color = {
+        .red = 255,
+        .green = 255,
+        .blue = 255
+    };
+
+    led_strip_clear(&led_strip);
+
+    for(int i = 0; i < 15; i++) {
+        led_strip_set_pixel_color(&led_strip, i, &white_color);
+        led_strip_set_pixel_color(&led_strip, 29-i, &white_color);
+        led_strip_show(&led_strip);
+        vTaskDelay(250 / portTICK_PERIOD_MS);
+    }
+
+    led_strip_clear(&led_strip);
+    led_strip_show(&led_strip);
+}
+
 
 #endif
