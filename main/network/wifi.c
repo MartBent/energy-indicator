@@ -16,12 +16,19 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
     }
     else if (event_id == WIFI_EVENT_STA_DISCONNECTED) {
         //wifi_event_sta_disconnected_t* event = (wifi_event_sta_disconnected_t*) event_data;
-        connected = false;
         ESP_LOGI("WiFi-STA", "Lost connection");
+        connected = false;
+
+        //Try reconnecting
+        if(reconnection_counter < 4 && !disabled) {
+            esp_wifi_connect();
+            reconnection_counter++;
+        }
     }
     else if (event_id == IP_EVENT_STA_GOT_IP) {
-        connected = true;
         ESP_LOGI("WiFi-STA", "Gained connected");
+        reconnection_counter = 0;
+        connected = true;
     }
 }
 
@@ -116,9 +123,8 @@ bool start_and_connect() {
         return false;
     } else {
         uint16_t delay_table[4] = {500, 1000, 2000, 5000};
-        uint8_t counter = 0;
-        while(counter < 4 && !connected){
-            vTaskDelay(delay_table[counter++] / portTICK_PERIOD_MS);
+        while(reconnection_counter < 4 && !connected){
+            vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
         return connected;
     }
@@ -126,7 +132,21 @@ bool start_and_connect() {
 
 void disable_wifi() {
     connected = false;
+    disabled = true;
     ESP_ERROR_CHECK(esp_wifi_stop());
+}
+
+void network_init_led() {
+    gpio_pad_select_gpio(NETWORK_WARNING_LED);
+    gpio_set_direction(NETWORK_WARNING_LED, GPIO_MODE_OUTPUT);
+}
+
+void network_enable_led() {
+    gpio_set_level((gpio_num_t)NETWORK_WARNING_LED, 1);
+}
+
+void network_disable_led() {
+    gpio_set_level((gpio_num_t)NETWORK_WARNING_LED, 0);
 }
 
 #endif
