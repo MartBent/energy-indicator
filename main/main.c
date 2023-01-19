@@ -179,10 +179,8 @@ void deep_sleep(uint32_t sleep_interval_seconds) {
     esp_sleep_enable_timer_wakeup(sleep_interval_seconds * 1000000);
     
     uint64_t pin_mask = (uint64_t)1 << RESET_BUTTON;
+    pin_mask |= (uint64_t)1 << SENSOR_INT;
 
-    //pin_mask |= (uint64_t)1 << SENSOR_INT;
-
-    
     ESP_ERROR_CHECK(esp_sleep_enable_ext1_wakeup(pin_mask, ESP_EXT1_WAKEUP_ANY_HIGH));
     esp_deep_sleep_start();
 }
