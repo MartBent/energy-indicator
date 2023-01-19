@@ -350,4 +350,34 @@ void display_draw_hour_watts(int hour, int watts)
     free(image);
 }
 
+//Draws hour string to the screen in the format "{hour} : 00"
+void display_draw_hour(int hour)
+{
+    image = (unsigned char*) malloc((128*296) / 8);
+    memset(image, 0, 128*296/8);
 
+    Init();
+
+    ClearFrame();
+    Clear(UNCOLORED);
+
+    char message[30] = {};
+    
+    sprintf(message, "%d:00", hour);
+
+    DrawStringAt(80, 40, message, &Font24, COLORED);
+
+    SetPartialWindowBlack(image, 0, 0, EPD_WIDTH, EPD_HEIGHT);
+
+    DisplayFrameRam();
+    Sleep();
+    free(image);
+}
+
+void display_clear() {
+    Init();
+    ClearFrame();
+    Clear(UNCOLORED);
+    DisplayFrameRam();
+    Sleep();
+}

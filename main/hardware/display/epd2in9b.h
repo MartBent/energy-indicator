@@ -101,6 +101,8 @@ void ClearFrame(void);
 void Sleep(void);  
 
 void display_draw_hour_watts(int hour, int watts);
+void display_draw_hour(int hour);
+void display_clear();
 
 #endif /* EPD2IN9B_H */
 

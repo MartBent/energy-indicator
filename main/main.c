@@ -2,6 +2,7 @@
 
 #include "network/wifi.h"
 #include "network/http.h"
+#include "network/time.h"
 
 #include "memory/solar_data.h"
 
@@ -25,12 +26,6 @@ solar_data_t* get_max_hour_data(bool use_test_data) {
         cache_ptr = &test_cache;
     }
 
-    solar_data_t max_data = {
-        .data_moment = Today,
-        .hour_of_day = 0,
-        .watt_hour = 0
-    };
-
     if(cache_ptr->data_valid) {
         result = &cache_ptr->data[0];
         for(int i = 0; i < 10; i++) {
@@ -46,65 +41,79 @@ solar_data_t* get_max_hour_data(bool use_test_data) {
 
 bool handle_timer_wakeup(settings_t* settings)
 {
+    bool result = false;
+
     setup_wifi();
     
     bool ok = setup_sta(settings);
     if(!ok) {
         printf("Error connecting to wifi\n");
-        return false;
+        result = false;
     }
 
-    bool result = false;
-    char* response = malloc(1000);
+    if(ok) {
+        char* response = malloc(1000);
+        
+        int length = 0;
+        if(http_get_request("https://api.forecast.solar/estimate/watt_hours_period/52.011509/6.701236/37/0/5.67", response, &length)) {
+            printf("%.*s\n", length, response);
 
-    //Re-enable wifi
-    start_and_connect();
+            char* line;
+            uint16_t counter = 0;
 
-    int length = 0;
-    if(http_get_request("https://api.forecast.solar/estimate/watt_hours_period/52.011509/6.701236/37/0/5.67", response, &length)) {
-        printf("%.*s\n", length, response);
+            while ((line = strtok_r(response, "\n", &response))) {
+                //Line is valid if it is shorter then 30 chars
+                if(strlen(line) <= 30) {
 
-        char* line;
-        uint16_t counter = 0;
+                    //We're gonna assume that the API returns 10 hours of each day, so 8 AM + counter. MOD 10 since 2 days of 10 hours are returned.
+                    char* date_time = strtok_r(line, ";", &line); 
+                    int watts = atoi(strtok_r(line, ";", &line));
+                    strtok_r(date_time, " ", &date_time);
+                    int time = 8 + (counter % 10);
+                
+                    solar_data_t line_data = {
+                        .data_moment = counter < 10 ? Today : Tormorrow,
+                        .hour_of_day = time,
+                        .watt_hour = watts
+                    };
 
-        while ((line = strtok_r(response, "\n", &response))) {
-            //Line is valid if it is shorter then 30 chars
-            if(strlen(line) <= 30) {
+                    if(counter <= 19) {
+                        cache.data[counter] = line_data;
+                    }
 
-                //We're gonna assume that the API returns 10 hours of each day, so 8 AM + counter. MOD 10 since 2 days of 10 hours are returned.
-                char* date_time = strtok_r(line, ";", &line); 
-                int watts = atoi(strtok_r(line, ";", &line));
-                strtok_r(date_time, " ", &date_time);
-                int time = 8 + (counter % 10);
-               
-                solar_data_t line_data = {
-                    .data_moment = counter < 10 ? Today : Tormorrow,
-                    .hour_of_day = time,
-                    .watt_hour = watts
-                };
-
-                if(counter <= 19) {
-                    cache.data[counter] = line_data;
+                    counter++;
                 }
-
-                counter++;
-            }
-            if(counter == 10) {
-                cache.data_valid = true;
-                result = true;
-                print_cache(cache);
-                break;
-            }
-        }      
-    }
-    else {
-        printf("The GET request resulted in error: %d\n", length);
+                if(counter == 10) {
+                    cache.data_valid = true;
+                    result = true;
+                    print_cache(cache);
+                    break;
+                }
+            }      
+        }
+        else {
+            printf("The GET request resulted in error: %d\n", length);
+        }
     }
 
     solar_data_t* max_data = get_max_hour_data(true);
-    display_draw_hour_watts(max_data->hour_of_day, max_data->watt_hour);
+
+    if(max_data != NULL) {
+
+        //Get time and calculate delta
+        uint8_t current_hour = get_hour_of_day();
+
+        uint8_t delta_hour = 0;
+
+        if(max_data->hour_of_day > current_hour) {
+            delta_hour = max_data->hour_of_day - current_hour;
+        }
+
+        display_draw_hour(delta_hour);
+    }
 
     disable_wifi();
+
     return result;
 }
 
@@ -217,7 +226,7 @@ void app_main(void)
             data_retrieved = handle_timer_wakeup(&settings);
         }
         //Sleep for only an hour if no data is retrieved. Otherswise for an whole day.
-        deep_sleep(data_retrieved ? 60*60*24 : 60);
+        deep_sleep(data_retrieved ? 60*60*24 : 60*60);
     } else {
         printf("Settings not found, setting up AP...\n");
         setup_access_point();

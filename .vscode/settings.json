@@ -13,7 +13,9 @@
         "led_strip.h": "c",
         "solar_data.h": "c",
         "imagedata.h": "c",
-        "spi_master.h": "c"
+        "spi_master.h": "c",
+        "time.h": "c",
+        "esp_sntp.h": "c"
     },
     "idf.adapterTargetName": "esp32",
     "C_Cpp.errorSquiggles": "Disabled"
