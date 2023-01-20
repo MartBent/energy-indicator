@@ -45,7 +45,12 @@ void clock_led_display_data(uint8_t hours_since_midnight, uint8_t community_perf
 
     printf("Displaying data on hour %d\n", hours_since_midnight);
     
-    led_strip_set_pixel_color(&led_strip, hours_since_midnight, &green_color);
+    //Use the led_map to determine which leds to turn on
+    led_couple_t led_couple = led_map[hours_since_midnight];
+
+    led_strip_set_pixel_color(&led_strip, led_couple.led_one, &green_color);
+    led_strip_set_pixel_color(&led_strip, led_couple.led_two, &green_color);
+
 
     //If community performance value is valid, display this amount in the last 5 LEDs on the strip
     if(community_performance < 6) {
