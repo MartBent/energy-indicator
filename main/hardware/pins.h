@@ -13,10 +13,10 @@
 #define MOSI_PIN 23
 #define SCK_PIN 18
 
-//Presence sensor interrupt pin
+//Presence sensor interrupt pin, should be connected with resistor to GND.
 #define SENSOR_INT 0
 
-//Reset button
+//Reset button, should be connected with resistor to GND.
 #define RESET_BUTTON 2
 
 //ADC pin
@@ -24,6 +24,7 @@
 
 //Pin for driving the battery warning LED
 #define BATTERY_WARNING_LED 19
+#define BATTERY_OK_LED 12
 
 //Pin for driving the network warning LED
 #define NETWORK_WARNING_LED 22

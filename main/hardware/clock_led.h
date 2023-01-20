@@ -13,7 +13,7 @@ void setup_clock_led();
 void clear_clock_led();
 
 //Turns on 3 LEDs with green light starting at starting_index. 3 LEDs since 30 available leds, 10 hours resolution, 30/10 = 3 LEDs per hour.
-void clock_led_display_hour(uint8_t hours_since_midnight);
+void clock_led_display_data(uint8_t hours_since_midnight, uint8_t community_performance);
 
 void disable_clock_led();
 

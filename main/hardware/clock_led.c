@@ -6,15 +6,15 @@
 
 static struct led_strip_t led_strip = {
     .rgb_led_type = RGB_LED_TYPE_SK6812,
-    .led_strip_length = 30
+    .led_strip_length = 29
 };
 
 void setup_clock_led() {
 
     printf("Setup led strip...\n");
 
-    static struct led_color_t led_strip_buf_1[30];
-    static struct led_color_t led_strip_buf_2[30];
+    static struct led_color_t led_strip_buf_1[29];
+    static struct led_color_t led_strip_buf_2[29];
 
     led_strip.rmt_channel = RMT_CHANNEL_0,
     led_strip.rmt_interrupt_num = 19,
@@ -33,7 +33,7 @@ void disable_clock_led() {
 }
 
 //Hours since midnight
-void clock_led_display_hour(uint8_t hours_since_midnight) {
+void clock_led_display_data(uint8_t hours_since_midnight, uint8_t community_performance) {
 
     struct led_color_t green_color = {
         .red = 0,
@@ -47,6 +47,13 @@ void clock_led_display_hour(uint8_t hours_since_midnight) {
     
     led_strip_set_pixel_color(&led_strip, hours_since_midnight, &green_color);
 
+    //If community performance value is valid, display this amount in the last 5 LEDs on the strip
+    if(community_performance < 6) {
+        for(int i = 0; i < community_performance; i++) {
+            led_strip_set_pixel_color(&led_strip, 23 + i, &green_color);
+        }
+    }
+
     led_strip_show(&led_strip);
 }
 
@@ -59,9 +66,9 @@ void clock_led_animate() {
 
     led_strip_clear(&led_strip);
 
-    for(int i = 0; i < 15; i++) {
+    for(int i = 0; i < 12; i++) {
         led_strip_set_pixel_color(&led_strip, i, &white_color);
-        led_strip_set_pixel_color(&led_strip, 29-i, &white_color);
+        led_strip_set_pixel_color(&led_strip, 23-i, &white_color);
         led_strip_show(&led_strip);
         vTaskDelay(250 / portTICK_PERIOD_MS);
     }

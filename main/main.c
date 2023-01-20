@@ -129,20 +129,26 @@ void handle_sensor_wakeup() {
 
     if(max_data_ptr != NULL) {
         
-        clock_led_display_hour(max_data_ptr->hour_of_day);
+
+        const uint8_t community_performance = 3;
+
+        clock_led_display_data(max_data_ptr->hour_of_day, community_performance);
         
         uint32_t voltage = battery_read_voltage();
         
         //Turn on the warning LED if battery is low
-        if(voltage < 1300) {
-            battery_enable_led();
+        if(voltage < 1500) {
+            battery_enable_warning_led();
+        } else if(voltage > 2100) {
+            battery_enable_ok_led();
         }
 
-        //Keep everything turned on for 3 seconds
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        //Keep everything turned on for 5 seconds
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
 
         disable_clock_led();
-        battery_disable_led();
+        battery_disable_warning_led();
+        battery_disable_ok_led();
 
         //Give the LED strip time to turn off
         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -152,7 +158,7 @@ void handle_sensor_wakeup() {
         network_enable_led();
         disable_clock_led();
 
-        vTaskDelay(3000 / portTICK_PERIOD_MS);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
 
         network_disable_led();
     }
@@ -221,7 +227,7 @@ void app_main(void)
         else {
             //The device should always retrieve solar data from the internet on startup.
             printf("Unknown wakeup cause / Inital startup\n");
-            data_retrieved = handle_timer_wakeup(&settings);
+            data_retrieved = handle_timer_wakeup(&settings); 
         }
         //Sleep for only an hour if no data is retrieved. Otherswise for an whole day.
         deep_sleep(data_retrieved ? 60*60*24 : 60*60);
