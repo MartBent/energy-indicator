@@ -74,7 +74,7 @@ static solar_data_cache_t test_cache = {
         {
             .data_moment = Today,
             .hour_of_day = 17,
-            .watt_hour = 36
+            .watt_hour = 3111
         }
     }
 };

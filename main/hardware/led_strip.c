@@ -347,7 +347,7 @@ bool led_strip_init(struct led_strip_t *led_strip)
 bool led_strip_set_pixel_color(struct led_strip_t *led_strip, uint32_t pixel_num, struct led_color_t *color)
 {
     bool set_led_success = true;
-
+    printf("LE-STRIP PIXEL SET: %d\n", pixel_num);
     if ((!led_strip) || (!color) || (pixel_num > led_strip->led_strip_length)) {
         return false;
     }

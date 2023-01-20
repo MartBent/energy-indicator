@@ -14,7 +14,7 @@
 #define SCK_PIN 18
 
 //Presence sensor interrupt pin, should be connected with resistor to GND.
-#define SENSOR_INT 0
+#define SENSOR_INT 4
 
 //Reset button, should be connected with resistor to GND.
 #define RESET_BUTTON 2
@@ -27,4 +27,4 @@
 #define BATTERY_OK_LED 12
 
 //Pin for driving the network warning LED
-#define NETWORK_WARNING_LED 22
+#define NETWORK_WARNING_LED 13

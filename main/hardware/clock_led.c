@@ -3,6 +3,57 @@
 
 #include "clock_led.h"
 
+//Index on the hour to get the corresponding led numbers
+const led_couple_t led_map[12] = {
+    {
+        .led_one = 21,
+        .led_two = 22
+    },
+    {
+        .led_one = 19,
+        .led_two = 20
+    },
+    {
+        .led_one = 17,
+        .led_two = 18
+    },
+    {
+        .led_one = 15,
+        .led_two = 16
+    },
+    {
+        .led_one = 14,
+        .led_two = 13
+    },
+    {
+        .led_one = 11,
+        .led_two = 12
+    },
+    {
+        .led_one = 10,
+        .led_two = 9
+    },
+    {
+        .led_one = 8,
+        .led_two = 7
+    },
+    {
+        .led_one = 6,
+        .led_two = 5
+    },
+    {
+        .led_one = 4,
+        .led_two = 3
+    },
+    {
+        .led_one = 2,
+        .led_two = 1
+    },
+    {
+        .led_one = 0,
+        .led_two = 23
+    },
+};
 
 static struct led_strip_t led_strip = {
     .rgb_led_type = RGB_LED_TYPE_SK6812,
@@ -51,11 +102,10 @@ void clock_led_display_data(uint8_t hours_since_midnight, uint8_t community_perf
     led_strip_set_pixel_color(&led_strip, led_couple.led_one, &green_color);
     led_strip_set_pixel_color(&led_strip, led_couple.led_two, &green_color);
 
-
     //If community performance value is valid, display this amount in the last 5 LEDs on the strip
     if(community_performance < 6) {
         for(int i = 0; i < community_performance; i++) {
-            led_strip_set_pixel_color(&led_strip, 23 + i, &green_color);
+            led_strip_set_pixel_color(&led_strip, 24 + i, &green_color);
         }
     }
 
@@ -71,16 +121,24 @@ void clock_led_animate() {
 
     led_strip_clear(&led_strip);
 
-    for(int i = 0; i < 12; i++) {
+    for(int i = 0; i < 12; i++) { 
         led_strip_set_pixel_color(&led_strip, i, &white_color);
         led_strip_set_pixel_color(&led_strip, 23-i, &white_color);
         led_strip_show(&led_strip);
-        vTaskDelay(250 / portTICK_PERIOD_MS);
+
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
+
+    for(int i = 11; i >= 0; i--) { 
+        led_strip_set_pixel_color(&led_strip, i, &white_color);
+        led_strip_set_pixel_color(&led_strip, 23-i, &white_color);
+        led_strip_show(&led_strip);
+
+        vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
     led_strip_clear(&led_strip);
     led_strip_show(&led_strip);
 }
-
 
 #endif

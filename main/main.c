@@ -101,15 +101,32 @@ bool handle_timer_wakeup(settings_t* settings)
     if(max_data != NULL) {
 
         //Get time and calculate delta
-        uint8_t current_hour = get_hour_of_day();
 
-        uint8_t delta_hour = 0;
+        uint8_t hour = 0, minutes = 0;
 
-        if(max_data->hour_of_day > current_hour) {
-            delta_hour = max_data->hour_of_day - current_hour;
+        bool ok = get_hour_of_day(&hour, &minutes);
+
+        if(ok) {
+            
+            uint8_t delta_hour = 0, delta_minutes = 0;
+
+            if(max_data->hour_of_day > hour) {
+                delta_hour = max_data->hour_of_day - hour;
+                if(minutes > 15 && minutes < 45) {
+                    if(delta_hour > 0) {
+                        delta_hour -= 1;
+                    }
+                    delta_minutes = 30;
+                }
+            }
+
+            display_draw_time(delta_hour, delta_minutes);
+            printf("Delta time: %d:%d...\n", delta_hour, delta_minutes);
+
+        } else {
+            printf("Error receiving time...\n");
         }
 
-        display_draw_hour(delta_hour);
     }
 
     disable_wifi();
@@ -129,12 +146,12 @@ void handle_sensor_wakeup() {
 
     if(max_data_ptr != NULL) {
         
-
         const uint8_t community_performance = 3;
 
-        clock_led_display_data(max_data_ptr->hour_of_day, community_performance);
+        clock_led_display_data(max_data_ptr->hour_of_day % 12, community_performance);
         
         uint32_t voltage = battery_read_voltage();
+        printf("Battery voltage: %d\n", voltage);
         
         //Turn on the warning LED if battery is low
         if(voltage < 1500) {
@@ -143,12 +160,16 @@ void handle_sensor_wakeup() {
             battery_enable_ok_led();
         }
 
+        if(!cache.data_valid) {
+            network_enable_led();
+        }
         //Keep everything turned on for 5 seconds
         vTaskDelay(5000 / portTICK_PERIOD_MS);
 
         disable_clock_led();
         battery_disable_warning_led();
         battery_disable_ok_led();
+        network_disable_led();
 
         //Give the LED strip time to turn off
         vTaskDelay(1000 / portTICK_PERIOD_MS);
@@ -172,6 +193,8 @@ void handle_reset_wakeup() {
         vTaskDelay(50 / portTICK_RATE_MS);
         ++counter;
         if(counter > 100) {
+            setup_clock_led();
+            display_clear();
             clock_led_animate();
             erase_settings();
             esp_restart();

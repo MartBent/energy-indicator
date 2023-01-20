@@ -4,4 +4,4 @@
 #include "wifi.h"
 
 void setup_time();
-uint8_t get_hour_of_day();
+bool get_hour_of_day(uint8_t* hour, uint8_t* minutes);
