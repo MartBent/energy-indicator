@@ -12,7 +12,6 @@
 #include "hardware/display/fonts.h"
 #include "hardware/battery.h"
 
-
 RTC_DATA_ATTR solar_data_cache_t cache = {};
 
 solar_data_t* get_max_hour_data(bool use_test_data) {
@@ -109,17 +108,17 @@ bool handle_timer_wakeup(settings_t* settings)
         if(ok) {
             
             uint8_t delta_hour = 0, delta_minutes = 0;
-
+            
             if(max_data->hour_of_day > hour) {
-                delta_hour = max_data->hour_of_day - hour;
-                if(minutes > 15 && minutes < 45) {
-                    if(delta_hour > 0) {
-                        delta_hour -= 1;
-                    }
-                    delta_minutes = 30;
-                }
+                delta_hour = max_data->hour_of_day - hour - 1;
             }
 
+            delta_minutes = 60 - minutes;
+            if(delta_minutes == 60) {
+                delta_hour += 1;
+                delta_minutes = 0;
+            }
+            
             display_draw_time(delta_hour, delta_minutes);
             printf("Delta time: %d:%d...\n", delta_hour, delta_minutes);
 
@@ -132,6 +131,28 @@ bool handle_timer_wakeup(settings_t* settings)
     disable_wifi();
 
     return result;
+}
+
+void handle_reset_wakeup() {
+    vTaskDelay(300 / portTICK_PERIOD_MS);
+    uint32_t counter = 0;
+    while(gpio_get_level(RESET_BUTTON) == 1) {
+        vTaskDelay(50 / portTICK_RATE_MS);
+        ++counter;
+        if(counter > 100) {
+            setup_clock_led();
+            disable_clock_led();
+            clock_led_animate();
+            vTaskDelay(500 / portTICK_RATE_MS);
+            disable_clock_led();
+            battery_disable_warning_led();
+            battery_disable_ok_led();
+            network_disable_led();
+            vTaskDelay(500 / portTICK_RATE_MS);
+            erase_settings();
+            esp_restart();
+        }
+    }
 }
 
 void handle_sensor_wakeup() {
@@ -163,8 +184,12 @@ void handle_sensor_wakeup() {
         if(!cache.data_valid) {
             network_enable_led();
         }
-        //Keep everything turned on for 5 seconds
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        //Keep everything turned on for 15 seconds
+        vTaskDelay(15000 / portTICK_PERIOD_MS);
+        for(int i = 0; i < 150; i++) {
+            handle_reset_wakeup();
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+        }
 
         disable_clock_led();
         battery_disable_warning_led();
@@ -182,23 +207,6 @@ void handle_sensor_wakeup() {
         vTaskDelay(5000 / portTICK_PERIOD_MS);
 
         network_disable_led();
-    }
-}
-
-void handle_reset_wakeup() {
-    printf("Handling reset wakeup...\n");
-    vTaskDelay(300 / portTICK_PERIOD_MS);
-    uint32_t counter = 0;
-    while(gpio_get_level(RESET_BUTTON) == 1) {
-        vTaskDelay(50 / portTICK_RATE_MS);
-        ++counter;
-        if(counter > 100) {
-            setup_clock_led();
-            display_clear();
-            clock_led_animate();
-            erase_settings();
-            esp_restart();
-        }
     }
 }
 
@@ -237,8 +245,8 @@ void app_main(void)
             bool did_button_wakeup = (pin_mask >> RESET_BUTTON) == 1;
 
             if(did_button_wakeup) {
+                printf("Handling reset wakeup...\n");
                 handle_reset_wakeup();
-
             } 
             else if(did_sensor_wakeup) {
                 handle_sensor_wakeup();
@@ -255,6 +263,9 @@ void app_main(void)
         //Sleep for only an hour if no data is retrieved. Otherswise for an whole day.
         deep_sleep(data_retrieved ? 60*60*24 : 60*60);
     } else {
+        setup_clock_led();
+        disable_clock_led();
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
         printf("Settings not found, setting up AP...\n");
         setup_access_point();
     }
