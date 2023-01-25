@@ -2,10 +2,14 @@
 
 The energy indicator will be able to indicate information about energy consumtion to the user. This will be done using a internet connection. 
 
+## Getting started
+This project makes use of Espressif's own embedded framework called "ESP IDF". This framework is used to write, build, flash, and debug embedded applications on ESP SoC's and it is required in order to use this project. A tutorial on how to install and use it can be found at [Esp Idf: Getting started](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/get-started/index.html)
+
+
 ## Overview
 ![systemoverview](https://user-images.githubusercontent.com/45065264/200043617-b37d10df-d38d-41cb-9b4f-f1f6de1efe84.png)
 
-This is a high level overview of the energy indicator system. Further technical specifications will be described later.
+This is a high level overview of the energy indicator system. More detailed explainations can be found in the corresponding folders found in the main folder.
 
 ## Components
 The components shown in the overview are described.
