@@ -1,7 +1,8 @@
 # Network
 
 ## HTTP
-The HTTP files contain an implementation to retrieve data from the internet using HTTP GET requests. It is currently only being used to retrieve data from [Forecast.solar](https://forecast.solar/)
+The HTTP files contain an implementation to retrieve data from the internet using HTTP GET requests. It is currently only being used to retrieve data from [Forecast.solar](https://forecast.solar/).
+
 The HTTP files also contain instructions on how to process an HTTP GET request. This GET request is retrieved by the webpage hosted on the esp, in case it is currently being used as Wi-Fi hotspot.
 
 ## Page
