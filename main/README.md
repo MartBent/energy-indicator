@@ -8,7 +8,7 @@ The ESP determine what is should do on wakeup by looking at the reason the devic
 ![wakeupflow drawio](https://user-images.githubusercontent.com/45065264/214599025-34540cca-b4a2-4747-bf44-62e8ad422f69.png)
 
 ### No user settings
-Whenever the device has no user settings it will be turned into a Wi-Fi access point (or hotspot). This hotspot is used to connect to the device and set user settings. More information can be found in the network folder.
+Whenever the device has no user settings it will be turned into a Wi-Fi access point (or hotspot). This hotspot is used to connect to the device and set user settings. More information can be found in the memory folder.
 
 ### Wakeup reasons
 
