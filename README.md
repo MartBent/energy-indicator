@@ -7,7 +7,7 @@ This project makes use of Espressif's own embedded framework called "ESP IDF". T
 
 
 ## Overview
-![systemoverview](https://user-images.githubusercontent.com/45065264/200043617-b37d10df-d38d-41cb-9b4f-f1f6de1efe84.png)
+![image](https://user-images.githubusercontent.com/45065264/214901735-14d080a3-8aa6-45b9-8559-48c41f92fb3d.png)
 
 This is a high level overview of the energy indicator system. More detailed explainations can be found in the corresponding folders found in the main folder.
 
