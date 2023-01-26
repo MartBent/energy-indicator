@@ -31,8 +31,14 @@ To overcome this issue an voltage divider is used. This voltage cuts the voltage
 This means that a full battery would result in an ADC measuring met 2.1v (4.2v / 2).
 
 ## Display
+The display that is used in this model is a 2.9 inch ePaper module from waveshare:
 
+![image](https://user-images.githubusercontent.com/45065264/214900684-8b8c8cce-bc4a-4c4a-80dd-561a21cc0fa7.png)
+
+This ePaper display uses an SPI interface to communicate with the ESP. The ESP is able to set all the pixels on this display. The contents of the display are retained when the power is turned off, making it suitable for low power applications.
 
 ## LED Strip
+The LED strip that is used to represent a analog clock. This clock is able to show the time by turning on the LEDs on the strip that are on the location of this certain time. 
 
 ## LEDs
+The device uses 3 seperate LEDs to display any warnings to the user. These warnings are network issues and battery statuses.
