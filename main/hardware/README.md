@@ -6,6 +6,7 @@ The ESP is connected to several hardware components, how these components are wi
 ![image jpeg](https://user-images.githubusercontent.com/45065264/214882115-4a8cf49a-1bd1-4b1d-9f39-1ae300eaf52d.jpg)
 
 ### Pin numbering
+Below is a table describing each GPIO pin and its function in this device. mind that these pin numberings are NOT the physical ESP pins, but GPIO pins.
 
 | Gpio n  | Function | Direction in relation to ESP |
 |---|---|---|
