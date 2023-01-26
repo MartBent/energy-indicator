@@ -20,11 +20,13 @@ bool get_hour_of_day(uint8_t* hour, uint8_t* minutes) {
     int retry = 0;
     const int retry_count = 4;
 
+    //Try to get the network time 4 times, after that stop trying.
     while (sntp_get_sync_status() == SNTP_SYNC_STATUS_RESET && ++retry < retry_count) {
         printf("Waiting for system time to be set... (%d/%d)\n", retry, retry_count);
         vTaskDelay(2000 / portTICK_PERIOD_MS);
     }
     
+    //If no time was found, return false.
     if(retry >= 4) {
         return false;
     }

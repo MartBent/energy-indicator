@@ -1,6 +1,7 @@
 #ifndef PAGE_C
 #define PAGE_C
 
+//This string contains the whole website of the ESP. This is used to set the user settings when the device is in access point mode.
 extern const char* page_html = "<!DOCTYPE html>\n"
 "<html lang=\"en\" >\n"
 "<head>\n"

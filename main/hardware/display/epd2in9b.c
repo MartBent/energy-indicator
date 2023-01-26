@@ -350,7 +350,7 @@ void display_draw_hour_watts(int hour, int watts)
     free(image);
 }
 
-//Draws hour string to the screen in the format "{hour} : 00"
+//Draws hour string to the screen in the format "{hour} : {minutes}", this function takes a while since its an ePaper module
 void display_draw_time(int hour, int minutes)
 {
     image = (unsigned char*) malloc((128*296) / 8);
@@ -378,6 +378,7 @@ void display_draw_time(int hour, int minutes)
     free(image);
 }
 
+//Clears the whole display.
 void display_clear() {
     Init();
     ClearFrame();

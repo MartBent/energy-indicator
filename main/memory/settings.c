@@ -5,6 +5,7 @@
 
 static const esp_partition_t* settings_partition;
 
+//Tries to retrieve user settings from flash memory, if there are no settings the function will return false.
 bool retrieve_settings(settings_t* settings) {
     printf("Retrieving settings...\n");
     uint8_t code[8];
@@ -29,6 +30,7 @@ bool retrieve_settings(settings_t* settings) {
     return true;
 }
 
+//This function saves the given settings_t struct to flash memory. 
 void save_settings(const settings_t* settings) {
     printf("Saving settings...\n");
     ESP_ERROR_CHECK(esp_partition_erase_range(settings_partition, 0, 4096));
@@ -44,11 +46,13 @@ void save_settings(const settings_t* settings) {
     ESP_ERROR_CHECK(esp_partition_write_raw(settings_partition, 192+3, SETTINGS_CODE, 8));
 }
 
+//This function erases any existing user settings from flash memory. 
 void erase_settings() {
     printf("Erasing settings..\n");
     ESP_ERROR_CHECK(esp_partition_erase_range(settings_partition, 0, 4096));
 }
 
+//This sets up the flash memory.
 void setup_flash() {
     esp_err_t ret = nvs_flash_init();
     if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {

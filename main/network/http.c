@@ -3,12 +3,14 @@
 
 #include "http.h"
 
+//This handler is ran when the user does a GET request to the IP address of the ESP, the ESP will repond with the webpage which can be found in page.c
 esp_err_t access_handler(httpd_req_t *req)
 {
     httpd_resp_send(req, page_html, HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 
+//This handler is used when the user does a POST request to the IP address of the ESP, if this POST request contains the SSID and PASSWORD field, it will be saved in flash memory and the ESP is restarted.
 esp_err_t save_handler(httpd_req_t *req)
 {
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
@@ -49,6 +51,7 @@ esp_err_t save_handler(httpd_req_t *req)
 static char rx_data[1000] = {};
 static int rx_data_len = 0;
 
+//Event handler to handle the retrieved data of an GET request.
 esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
     switch(evt->event_id) {
@@ -70,7 +73,7 @@ esp_err_t http_event_handler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-//Length will contain the error code if this is the case.
+//This function make a GET request to a certain url, it returns false if it was unable to do this GET request. If it returns false the length field will contain the HTTP error code.
 bool http_get_request(const char* url, char* response, int* length) {
     *length = 0;
     esp_http_client_config_t config = {

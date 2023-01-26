@@ -82,12 +82,13 @@ void setup_clock_led() {
     }
 }
 
+//Clears the LED strip 
 void disable_clock_led() {
     led_strip_clear(&led_strip);
     led_strip_show(&led_strip);
 }
 
-//Hours since midnight
+//This function turns on the given LEDs on the led strip with a green color, hours 0 until 11 are supported, for the community_performance values 0 - 4 are supported
 void clock_led_display_data(uint8_t hours_since_midnight, uint8_t community_performance) {
 
     struct led_color_t green_color = {
@@ -116,6 +117,7 @@ void clock_led_display_data(uint8_t hours_since_midnight, uint8_t community_perf
     led_strip_show(&led_strip);
 }
 
+//Plays an wave animate, used to indicate that the settings were reset.
 void clock_led_animate() {
     struct led_color_t white_color = {
         .red = 255,
@@ -123,8 +125,10 @@ void clock_led_animate() {
         .blue = 255
     };
 
+    //Clear current values on strip
     led_strip_clear(&led_strip);
 
+    //Start first wave animation
     for(int i = 0; i < 12; i++) { 
         led_strip_set_pixel_color(&led_strip, i, &white_color);
         led_strip_set_pixel_color(&led_strip, 23-i, &white_color);
@@ -133,6 +137,7 @@ void clock_led_animate() {
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
+    //Start second wave animation
     for(int i = 11; i >= 0; i--) { 
         led_strip_set_pixel_color(&led_strip, i, &white_color);
         led_strip_set_pixel_color(&led_strip, 23-i, &white_color);
@@ -141,6 +146,7 @@ void clock_led_animate() {
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }
 
+    //Clear the LED strip again
     led_strip_clear(&led_strip);
     led_strip_show(&led_strip);
 }
