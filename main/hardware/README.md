@@ -22,7 +22,7 @@ Below is a table describing each GPIO pin and its function in this device. mind 
 | 27  | Battery warning led | OUT |
 | 32  | Battery ADC | IN |
 | 25  | Battery ok led | OUT |
-| 15  | Network warning led | OUT |
+| 13  | Network warning led | OUT |
 
 ## Battery
 Since the device is battery powered it needs to be able to tell how much battery capacity is left. This is done using a SAR ADC which are built into the ESP. The ADC has an range from 150 to 2350 mV, this means that it does not have enough range to measure the whole battery, which can be up to 4.2 volts. This voltage would also damage the GPIO since these can only handle voltages of up to 3.3 volts.
